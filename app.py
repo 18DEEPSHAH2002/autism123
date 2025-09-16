@@ -16,7 +16,7 @@ st.write("Fill in the details below and click **Predict** to check the probabili
 
 # Collect A1–A10 scores
 scores = {}
-for i in range(1, 11):
+for i in range(1, 10 + 1):
     scores[f"A{i}_Score"] = st.selectbox(f"A{i}_Score", [0, 1], index=0)
 
 # Other inputs
@@ -57,6 +57,24 @@ if st.button("Predict"):
     # Label encode
     new_df["country_of_res"] = le_country.transform(new_df["country_of_res"])
     new_df["used_app_before"] = le_used_app.transform(new_df["used_app_before"])
+
+    # ✅ Ensure feature order matches training
+    try:
+        expected_features = scaler.feature_names_in_   # sklearn >=1.0
+    except AttributeError:
+        # If not available, define manually (must match training pipeline!)
+        expected_features = [
+            "A1_Score","A2_Score","A3_Score","A4_Score","A5_Score",
+            "A6_Score","A7_Score","A8_Score","A9_Score","A10_Score",
+            "age","country_of_res","used_app_before",
+            # add all OHE-generated columns
+            "gender_female","gender_male",
+            "jaundice_no","jaundice_yes",
+            "autism_no","autism_yes"
+        ]
+
+    # Reindex new_df to match training features
+    new_df = new_df.reindex(columns=expected_features, fill_value=0)
 
     # Scale
     new_scaled = scaler.transform(new_df)
